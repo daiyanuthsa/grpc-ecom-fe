@@ -1,12 +1,16 @@
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FormInput from "../../components/FormInput/FormInput";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { getAuthClient } from "../../api/grpc/client";
 
 const loginschema = yup.object().shape({
   email: yup.string().email("Email tidak valid").required("Email wajib diisi"),
-  password: yup.string().required("Kata sandi wajib diisi").min(6, "Kata sandi minimal 6 karakter"),
+  password: yup
+    .string()
+    .required("Kata sandi wajib diisi")
+    .min(6, "Kata sandi minimal 6 karakter"),
 });
 
 interface LoginFromValues {
@@ -15,12 +19,30 @@ interface LoginFromValues {
 }
 
 const Login = () => {
-    const form = useForm<LoginFromValues>({
-        resolver: yupResolver(loginschema),
-    })
-    const submitHandler = (values: LoginFromValues) => {
-        console.log(values)
+  const form = useForm<LoginFromValues>({
+    resolver: yupResolver(loginschema),
+  });
+  const navigate = useNavigate();
+
+  const submitHandler = async (values: LoginFromValues) => {
+    console.log(values);
+    
+    const client = getAuthClient();
+    const res = await client.login({
+      email: values.email,
+      password: values.password,
+    });
+
+    if (res.response.base?.isError ?? true) {
+      alert(res.response.base?.message ?? "Terjadi kesalahan");
+      return;
     }
+    localStorage.setItem("access_token", res.response.accessToken);
+
+    console.log(res.response.accessToken);
+    navigate('/');
+  };
+
   return (
     <div className="login-section">
       <div className="container">
@@ -69,5 +91,3 @@ const Login = () => {
 };
 
 export default Login;
-
-
