@@ -24,6 +24,9 @@ import AdminCustomerListSection from './components/AdminCustomerListSection/Admi
 import AdminSalesReportSection from './components/AdminReportSection/AdminReportSection';
 import AdminDashboardSection from './components/AdminDashboardSection/AdminDashboardSection';
 import OrderDetailSection from './components/OrderDetailSection/OrderDetailSection';
+import { getAuthClient } from "./api/grpc/client";
+import { useEffect, useState } from 'react';
+import { useAuthStore } from './store/auth';
 
 const router = createBrowserRouter([
     {
@@ -85,6 +88,32 @@ const router = createBrowserRouter([
 ])
 
 function App() {
+    const [isInitiating, setIsInitiating] = useState(true);
+
+    const authClient = useAuthStore(state=>state.login);
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+            const token = localStorage.getItem("access_token");
+
+            
+
+            if (token) {
+                await getAuthClient().getProfile({});
+                authClient(token);
+            }
+            } finally {
+            setIsInitiating(false);
+            }
+        }
+
+        fetchProfile();
+       
+    }, []);        
+    if (isInitiating) {
+        return null;
+    }
+    
     return <RouterProvider router={router} />
 }
 

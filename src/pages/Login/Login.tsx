@@ -4,6 +4,8 @@ import FormInput from "../../components/FormInput/FormInput";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { getAuthClient } from "../../api/grpc/client";
+import { useAuthStore } from "../../store/auth";
+import Swal from "sweetalert2";
 
 const loginschema = yup.object().shape({
   email: yup.string().email("Email tidak valid").required("Email wajib diisi"),
@@ -23,6 +25,7 @@ const Login = () => {
     resolver: yupResolver(loginschema),
   });
   const navigate = useNavigate();
+  const authClient = useAuthStore(state=>state.login);
 
   const submitHandler = async (values: LoginFromValues) => {
     console.log(values);
@@ -38,9 +41,18 @@ const Login = () => {
       return;
     }
     localStorage.setItem("access_token", res.response.accessToken);
-
-    console.log(res.response.accessToken);
-    navigate('/');
+    authClient(res.response.accessToken);
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil masuk",
+      confirmButtonText: "OK",
+    });
+    if (useAuthStore.getState().role === "admin") {
+      navigate('/admin');
+    } else {
+      navigate('/');
+    }
+    
   };
 
   return (
