@@ -1,39 +1,129 @@
-import { Link } from 'react-router-dom';
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { getAuthClient } from "../../api/grpc/client";
+import FormInput from "../../components/FormInput/FormInput";
+import Swal from "sweetalert2";
+
+interface RegisterFormValues {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const registerSchema = yup.object().shape({
+  name: yup.string().required("Nama lengkap wajib diisi"),
+  email: yup.string().email("Email tidak valid").required("Email wajib diisi"),
+  password: yup
+    .string()
+    .min(6, "Kata sandi minimal 6 karakter")
+    .required("Kata sandi wajib diisi"),
+  confirmPassword: yup
+    .string()
+    .required("Konfirmasi kata sandi wajib diisi")
+    .oneOf([yup.ref("password")], "Kata sandi tidak sesuai"),
+});
 
 const Register = () => {
-    return (
-        <div className="login-section">
-            <div className="container">
-                <div className="row justify-content-center">
-                    <div className="col-md-6 col-lg-5">
-                        <div className="login-wrap p-4">
-                            <h2 className="section-title text-center mb-5">Daftar</h2>
-                            <form action="#" className="login-form">
-                                <div className="form-group mb-4">
-                                    <input type="text" className="form-control" placeholder="Nama Lengkap" required />
-                                </div>
-                                <div className="form-group mb-4">
-                                    <input type="email" className="form-control" placeholder="Alamat Email" required />
-                                </div>
-                                <div className="form-group mb-4">
-                                    <input type="password" className="form-control" placeholder="Kata Sandi" required />
-                                </div>
-                                <div className="form-group mb-4">
-                                    <input type="password" className="form-control" placeholder="Konfirmasi Kata Sandi" required />
-                                </div>
-                                <div className="form-group">
-                                    <button type="submit" className="btn btn-primary btn-block">Buat Akun</button>
-                                </div>
-                                <div className="text-center mt-4">
-                                    <p>Sudah punya akun? <Link to="/login" className="text-primary">Masuk di sini</Link></p>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+  const navigate = useNavigate();
+  const form = useForm<RegisterFormValues>({
+    resolver: yupResolver(registerSchema),
+  });
+  const { isSubmitting } = form.formState;
+  
+  const submitHandler = async (values: RegisterFormValues) => {
+    const client = getAuthClient();
+    const res = await client.register({
+      fullName: values.name,
+      email: values.email,
+      password: values.password,
+      confirmPassword: values.confirmPassword,
+    });
+
+    if (res.response.base?.isError ?? true) {
+      if (res.response.base?.message) {
+        Swal.fire({
+          icon: "error",
+          title: res.response.base?.message,
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+      alert(res.response.base?.message ?? "Terjadi kesalahan");
+      return;
+    }
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil mendaftar",
+      confirmButtonText: "OK",
+    });
+    navigate("/login");
+  };
+  return (
+    <div className="login-section">
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-md-6 col-lg-5">
+            <div className="login-wrap p-4">
+              <h2 className="section-title text-center mb-5">Daftar</h2>
+              <form
+                onSubmit={form.handleSubmit(submitHandler)}
+                className="login-form"
+              >
+                <FormInput<RegisterFormValues>
+                  type="text"
+                  placeholder="Nama Lengkap"
+                  register={form.register}
+                  errors={form.formState.errors}
+                  name="name"
+                />
+                <FormInput<RegisterFormValues>
+                  type="email"
+                  placeholder="email@example.com"
+                  register={form.register}
+                  errors={form.formState.errors}
+                  name="email"
+                />
+                <FormInput<RegisterFormValues>
+                  type="password"
+                  placeholder="Kata Sandi"
+                  register={form.register}
+                  errors={form.formState.errors}
+                  name="password"
+                />
+                <FormInput<RegisterFormValues>
+                  type="password"
+                  placeholder="Konfirmasi Kata Sandi"
+                  register={form.register}
+                  errors={form.formState.errors}
+                  name="confirmPassword"
+                />
+                <div className="form-group">
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-block"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Memproses..." : "Buat Akun"}
+                  </button>
                 </div>
+                <div className="text-center mt-4">
+                  <p>
+                    Sudah punya akun?{" "}
+                    <Link to="/login" className="text-primary">
+                      Masuk di sini
+                    </Link>
+                  </p>
+                </div>
+              </form>
             </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default Register;
