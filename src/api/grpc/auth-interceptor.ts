@@ -8,7 +8,7 @@ export const authInterceptor: RpcInterceptor = {
             ...options.meta,
             authorization: `Bearer ${token}`
           };
-          options.meta['Authorization'] = `Bearer ${token}`;
+        //   options.meta['Authorization'] = `Bearer ${token}`;
       }
 
       return next(method, input, options);

@@ -5,34 +5,46 @@ interface UserClaims {
   sub: string;
   full_name: string;
   email: string;
-  role: string;
+  role_code: string;
   member_since: string;
 }
 
 interface AuthStoreState {
   isAuthenticated: boolean;
-  jwtPayload?: UserClaims|null;
+  jwtPayload?: UserClaims | null;
   role: "customer" | "admin";
   login: (token: string) => void;
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthStoreState>((set) => ({
   isAuthenticated: false,
   jwtPayload: null,
   role: "customer",
-  login: (token: string) => set(state=>{ 
-    try {
-      const claims: UserClaims = jwtDecode<UserClaims>(token);
+  login: (token: string) =>
+    set((state) => {
+      try {
+        const claims: UserClaims = jwtDecode<UserClaims>(token);
+        return {
+          ...state,
+          isAuthenticated: true,
+          jwtPayload: claims,
+          role: claims.role_code === "admin" ? "admin" : "customer",
+        };
+      } catch {
+        return {
+          ...state,
+        };
+      }
+    }),
+  // Tambahkan action logout di sini
+  logout: () =>
+    set(state => {
       return {
         ...state,
-        isAuthenticated: true,
-        jwtPayload: claims,
-        role: claims.role === "admin" ? "admin" : "customer",
-      };
-    } catch {
-      return{
-        ...state,
+        isAuthenticated: false,
+        jwtPayload: null,
+        role: "customer",
       }
-    }
-  }),
+    }),
 }));

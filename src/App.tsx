@@ -89,27 +89,27 @@ const router = createBrowserRouter([
 
 function App() {
     const [isInitiating, setIsInitiating] = useState(true);
-
     const authClient = useAuthStore(state=>state.login);
+
     useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-            const token = localStorage.getItem("access_token");
-
-            
-
-            if (token) {
-                await getAuthClient().getProfile({});
-                authClient(token);
-            }
-            } finally {
-            setIsInitiating(false);
-            }
+      const fetchProfile = async () => {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          // Tidak ada token, langsung selesai
+          setIsInitiating(false);
+          return;
         }
+        try {
+          await getAuthClient().getProfile({});
+          authClient(token);
+        } finally {
+          setIsInitiating(false);
+        }
+      };
 
-        fetchProfile();
-       
-    }, []);        
+      fetchProfile();
+    }, [authClient]);  
+    
     if (isInitiating) {
         return null;
     }

@@ -9,6 +9,7 @@ function AdminLayout() {
     const navigate = useNavigate();
 
     useEffect(() => {
+        console.log(isLoggedIn, userRole);
       if (!isLoggedIn || userRole !== "admin") {
         navigate("/");
       } 
