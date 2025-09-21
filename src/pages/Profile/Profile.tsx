@@ -4,6 +4,8 @@ import PlainHeroSection from '../../components/PlainHeroSection/PlainHeroSection
 import { GetProfileResponse } from '../../../pb/auth/auth';
 import { getAuthClient } from '../../api/grpc/client';
 import { Timestamp } from '../../../pb/google/protobuf/timestamp';
+import Swal from 'sweetalert2';
+import { RpcError } from '@protobuf-ts/runtime-rpc';
 
 function Profile() {
   const location = useLocation();
@@ -39,9 +41,29 @@ const formatDate: FormatDate = (timestamp) => {
         const res = await client.getProfile({});
 
         // Menyimpan data profil dari response
+        if (res.response.base?.isError ?? true) {
+          Swal.fire({
+            title: res.response.base?.message || "Terjadi kesalahan",
+            icon: "error",
+            text: "Gagal mengambil data profil.",
+          });
+        }
         setProfileData(res.response);
         setError(null); // Menghapus status error jika sebelumnya ada
       } catch (err) {
+        if (err instanceof RpcError){
+            if (err.code === 'UNAUTHENTICATED') {
+                // Unauthorized error, redirect to login
+                Swal.fire({
+                  title: "Sesi habis, silakan masuk kembali.",
+                  icon: "warning",
+                  confirmButtonText: "OK",
+                });
+                localStorage.removeItem("access_token");
+                navigate("/login");
+                return;
+            }
+        }
         console.error("Failed to fetch profile:", err);
         setError("Gagal mengambil data profil.");
       } finally {
