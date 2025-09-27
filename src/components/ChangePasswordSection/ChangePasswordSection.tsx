@@ -4,6 +4,7 @@ import * as yup from "yup";
 import { getAuthClient } from "../../api/grpc/client";
 import FormInput from "../FormInput/FormInput";
 import Swal from "sweetalert2";
+import { useGrpcApi } from "../../hooks/useGrpcApi";
 interface ChangePasswordValues {
   oldPassword: string;
   newPassword: string;
@@ -23,27 +24,27 @@ const changePasswordSchema = yup.object().shape({
 });
 
 function ChangePasswordSection() {
+    const submitApi = useGrpcApi();
   const form = useForm<ChangePasswordValues>({
     resolver: yupResolver(changePasswordSchema),
   });
-  const { isSubmitting } = form.formState;
-
   const submitHandler = async (values: ChangePasswordValues) => {
-    const client = getAuthClient();
-    const res = await client.changePassword({
+    await submitApi.apiCall(getAuthClient().changePassword({
       oldPassword: values.oldPassword,
       newPassword: values.newPassword,
       newConfirmPassword: values.confirmPassword,
+    }),{
+        defaultError: (res) => {
+            if (res.response.base?.message === "Incorrect old password") {
+                Swal.fire({
+                    icon: "error",
+                    title:  "Kata sandi saat ini salah",
+                });
+            }
+        },
+        useDefaultError: false,
     });
-    if (res.response.base?.isError ?? true) {
-      Swal.fire({
-        icon: "error",
-        title: res.response.base?.message || "Terjadi kesalahan",
-        confirmButtonText: "OK",
-      });
-      console.log(res.response.base);
-      return;
-    }
+    
     form.reset();
     Swal.fire({
       icon: "success",
@@ -93,7 +94,7 @@ function ChangePasswordSection() {
         <button
           className="btn btn-primary"
           type="submit"
-          disabled={isSubmitting}
+          disabled={submitApi.isLoading}
         >
           Perbarui Kata Sandi
         </button>

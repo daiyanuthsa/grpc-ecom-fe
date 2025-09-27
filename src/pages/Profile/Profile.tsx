@@ -4,8 +4,7 @@ import PlainHeroSection from '../../components/PlainHeroSection/PlainHeroSection
 import { GetProfileResponse } from '../../../pb/auth/auth';
 import { getAuthClient } from '../../api/grpc/client';
 import { Timestamp } from '../../../pb/google/protobuf/timestamp';
-import Swal from 'sweetalert2';
-import { RpcError } from '@protobuf-ts/runtime-rpc';
+import { useGrpcApi } from "../../hooks/useGrpcApi";
 
 function Profile() {
   const location = useLocation();
@@ -15,10 +14,6 @@ function Profile() {
   const [profileData, setProfileData] = useState<GetProfileResponse | null>(
     null
   );
-  // State untuk menangani status loading
-  const [isLoading, setIsLoading] = useState(true);
-  // State untuk menangani error
-  const [error, setError] = useState<string | null>(null);
 
 interface FormatDate {
     (timestamp?: Timestamp): string;
@@ -34,41 +29,12 @@ const formatDate: FormatDate = (timestamp) => {
     });
 };
 
+const profileApi= useGrpcApi();
+
   useEffect(() => {
     async function fetchProfile() {
-      try {
-        const client = getAuthClient();
-        const res = await client.getProfile({});
-
-        // Menyimpan data profil dari response
-        if (res.response.base?.isError ?? true) {
-          Swal.fire({
-            title: res.response.base?.message || "Terjadi kesalahan",
-            icon: "error",
-            text: "Gagal mengambil data profil.",
-          });
-        }
-        setProfileData(res.response);
-        setError(null); // Menghapus status error jika sebelumnya ada
-      } catch (err) {
-        if (err instanceof RpcError){
-            if (err.code === 'UNAUTHENTICATED') {
-                // Unauthorized error, redirect to login
-                Swal.fire({
-                  title: "Sesi habis, silakan masuk kembali.",
-                  icon: "warning",
-                  confirmButtonText: "OK",
-                });
-                localStorage.removeItem("access_token");
-                navigate("/login");
-                return;
-            }
-        }
-        console.error("Failed to fetch profile:", err);
-        setError("Gagal mengambil data profil.");
-      } finally {
-        setIsLoading(false); // Mengubah status loading menjadi false setelah selesai
-      }
+        const res = await profileApi.apiCall(getAuthClient().getProfile({}));
+     setProfileData(res?.response ?? null);
     }
 
     fetchProfile();
@@ -93,12 +59,8 @@ const formatDate: FormatDate = (timestamp) => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label className="text-black">Nama Lengkap</label>{" "}
-                      {isLoading ? (
+                      {profileApi.isLoading ? (
                         <div className="form-control-plaintext">Memuat...</div>
-                      ) : error ? (
-                        <div className="form-control-plaintext text-danger">
-                          {error}
-                        </div>
                       ) : (
                         <div className="form-control-plaintext">
                           {profileData?.fullName}
@@ -109,9 +71,13 @@ const formatDate: FormatDate = (timestamp) => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label className="text-black">Alamat Email</label>
-                      <div className="form-control-plaintext">
-                        {profileData?.email}
-                      </div>
+                      {profileApi.isLoading ? (
+                        <div className="form-control-plaintext">Memuat...</div>
+                      ) : (
+                        <div className="form-control-plaintext">
+                          {profileData?.email}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="col-md-4">

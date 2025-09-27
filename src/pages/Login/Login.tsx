@@ -6,6 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { getAuthClient } from "../../api/grpc/client";
 import { useAuthStore } from "../../store/auth";
 import Swal from "sweetalert2";
+import { useGrpcApi } from "../../hooks/useGrpcApi";
 
 const loginschema = yup.object().shape({
   email: yup.string().email("Email tidak valid").required("Email wajib diisi"),
@@ -26,20 +27,24 @@ const Login = () => {
   });
   const navigate = useNavigate();
   const authClient = useAuthStore(state=>state.login);
+  const loginApi = useGrpcApi();
 
   const submitHandler = async (values: LoginFromValues) => {
-    console.log(values);
-    
-    const client = getAuthClient();
-    const res = await client.login({
+    const res = await loginApi.apiCall(getAuthClient().login({
       email: values.email,
       password: values.password,
-    });
+    }),{
+        useDefaultAuthError: false,
+        defaultAuthError: () => {
+            Swal.fire({
+                icon: "error",
+                title: "Gagal masuk",
+                text: "Email atau kata sandi salah",
+                confirmButtonText: "OK",
+            });
+        },
 
-    if (res.response.base?.isError ?? true) {
-      alert(res.response.base?.message ?? "Terjadi kesalahan");
-      return;
-    }
+    });
     localStorage.setItem("access_token", res.response.accessToken);
     authClient(res.response.accessToken);
     Swal.fire({

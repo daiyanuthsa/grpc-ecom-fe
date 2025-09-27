@@ -2,10 +2,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
 import Swal from 'sweetalert2';
 import { getAuthClient } from '../../api/grpc/client';
+import { useGrpcApi } from '../../hooks/useGrpcApi';
 
 function AdminNavbar() {
     const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
+    const logoutApi = useGrpcApi();
 
     const logOutHandler = async () => {
         const result = await Swal.fire({
@@ -19,11 +21,7 @@ function AdminNavbar() {
           return;
         }
         try {
-          const client = getAuthClient();
-          // Perbaikan: Akses `base` langsung dari respons
-          const res = await client.logout({});
-    
-          if (!res.response.base?.isError) {
+          await logoutApi.apiCall(getAuthClient().logout({}));
             logout();
             localStorage.removeItem("access_token");
             Swal.fire({
@@ -31,10 +29,7 @@ function AdminNavbar() {
               title: "Berhasil keluar",
               confirmButtonText: "OK",
             });
-            // Perbaikan: Gunakan `useNavigate` untuk navigasi yang lebih baik
             navigate("/login");
-          }
-          alert(res.response.base?.message || "Terjadi kesalahan saat logout.");
           return;
         } catch (error) {
           console.error("Logout failed:", error);

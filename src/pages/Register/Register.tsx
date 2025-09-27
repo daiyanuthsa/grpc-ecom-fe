@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getAuthClient } from "../../api/grpc/client";
 import FormInput from "../../components/FormInput/FormInput";
 import Swal from "sweetalert2";
+import { useGrpcApi } from "../../hooks/useGrpcApi";
 
 interface RegisterFormValues {
   name: string;
@@ -31,29 +32,28 @@ const Register = () => {
   const form = useForm<RegisterFormValues>({
     resolver: yupResolver(registerSchema),
   });
-  const { isSubmitting } = form.formState;
-  
+  const registerApi = useGrpcApi();
+
+
+
   const submitHandler = async (values: RegisterFormValues) => {
-    const client = getAuthClient();
-    const res = await client.register({
+    await registerApi.apiCall(getAuthClient().register({
       fullName: values.name,
       email: values.email,
       password: values.password,
       confirmPassword: values.confirmPassword,
+    }),{
+      useDefaultError: false,
+      defaultError(e) {
+          Swal.fire({
+              icon: "error",
+              title: "Gagal mendaftar",
+              text: e.response.base?.message || "Terjadi kesalahan",
+              confirmButtonText: "OK",
+          });
+      },
     });
 
-    if (res.response.base?.isError ?? true) {
-      if (res.response.base?.message) {
-        Swal.fire({
-          icon: "error",
-          title: res.response.base?.message,
-          confirmButtonText: "OK",
-        });
-        return;
-      }
-      alert(res.response.base?.message ?? "Terjadi kesalahan");
-      return;
-    }
     Swal.fire({
       icon: "success",
       title: "Berhasil mendaftar",
@@ -104,9 +104,9 @@ const Register = () => {
                   <button
                     type="submit"
                     className="btn btn-primary btn-block"
-                    disabled={isSubmitting}
+                    disabled={registerApi.isLoading}
                   >
-                    {isSubmitting ? "Memproses..." : "Buat Akun"}
+                    {registerApi.isLoading ? "Memproses..." : "Buat Akun"}
                   </button>
                 </div>
                 <div className="text-center mt-4">
