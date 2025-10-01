@@ -7,7 +7,7 @@ GEN_PATH="pb"
 PROTO_FILES=(
     "auth/auth.proto"
     "common/base_response.proto"
-    # "product/product.proto"
+    "product/product.proto"
 )
 
 # Hapus file hasil generate sebelumnya
