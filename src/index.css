@@ -1200,3 +1200,40 @@ textarea {
 .modal-dialog {
   z-index: 9999;
 }
+/* src/index.css atau file styling custom Anda */
+
+.form-control[type="file"] {
+    /* Menghapus padding agar hanya padding pada tombol yang terlihat */
+    padding: 0; 
+    
+}
+
+/* Menargetkan tombol Choose File di Webkit/Chrome/Safari */
+.form-control[type="file"]::-webkit-file-upload-button {
+    /* Menggunakan styling tombol Bootstrap */
+    padding: .375rem .75rem; /* Padding standar .form-control */
+    margin: 0; 
+    border-radius: .25rem 0 0 .25rem; /* Border radius hanya di kiri */
+    background-color: #1a79d8; /* Warna latar belakang */
+    color: #212529; /* Warna teks */
+    border-color: #ced4da;
+    border-style: solid;
+    border-width: 0;
+    border-inline-end-width: 1px; /* Garis pemisah */
+    cursor: pointer;
+}
+
+/* Menargetkan tombol Choose File di Firefox */
+.form-control[type="file"]::file-selector-button {
+    /* Menggunakan styling tombol Bootstrap */
+    padding: .75rem .75rem;
+    margin: 0;
+    border-radius: .25rem 0 0 .25rem;
+    background-color: #e9ecef;
+    color: #212529;
+    border-color: #ced4da;
+    border-style: solid;
+    border-width: 0;
+    border-inline-end-width: 1px;
+    cursor: pointer;
+}

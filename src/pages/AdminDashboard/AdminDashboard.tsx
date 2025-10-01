@@ -13,13 +13,13 @@ function AdminDashboard() {
                             <Link to="/admin/dashboard" className={`nav-link ${location.pathname === '/admin/dashboard' ? 'active' : ''}`}>
                                 Dashboard Penjualan
                             </Link>
-                            <Link to="/admin/products" className={`nav-link ${location.pathname === '/admin/products' ? 'active' : ''}`}>
+                            <Link to="/admin/products" className={`nav-link ${location.pathname.startsWith('/admin/products')  ? 'active' : ''}`}>
                                 Produk
                             </Link>
-                            <Link to="/admin/orders" className={`nav-link ${location.pathname === '/admin/orders' ? 'active' : ''}`}>
+                            <Link to="/admin/orders" className={`nav-link ${location.pathname.startsWith('/admin/orders') ? 'active' : ''}`}>
                                 Order
                             </Link>
-                            <Link to="/admin/customers" className={`nav-link ${location.pathname === '/admin/customers' ? 'active' : ''}`}>
+                            <Link to="/admin/customers" className={`nav-link ${location.pathname.startsWith('/admin/customers') ? 'active' : ''}`}>
                                 Pelanggan
                             </Link>
                             <Link to="/admin/reports" className={`nav-link ${location.pathname === '/admin/reports' ? 'active' : ''}`}>
