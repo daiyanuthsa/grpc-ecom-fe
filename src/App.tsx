@@ -27,66 +27,68 @@ import OrderDetailSection from './components/OrderDetailSection/OrderDetailSecti
 import { getAuthClient } from "./api/grpc/client";
 import { useEffect, useState } from 'react';
 import { useAuthStore } from './store/auth';
+import AdminEditProduct from './pages/AdminEditProduct/AdminEditProduct';
 
 const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <ECommerceLayout />,
+  {
+    path: "/",
+    element: <ECommerceLayout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: "shop", element: <Shop /> },
+      { path: "services", element: <Services /> },
+      { path: "cart", element: <Cart /> },
+      { path: "checkout", element: <Checkout /> },
+      { path: "checkout/success", element: <CheckoutSuccess /> },
+      {
+        path: "profile",
+        element: <Profile />,
         children: [
-            { index: true, element: <Home /> },
-            { path: 'shop', element: <Shop /> },
-            { path: 'services', element: <Services /> },
-            { path: 'cart', element: <Cart /> },
-            { path: 'checkout', element: <Checkout /> },
-            { path: 'checkout/success', element: <CheckoutSuccess /> },
-            {
-                path: 'profile',
-                element: <Profile />,
-                children: [
-                    { path: 'change-password', element: <ChangePasswordSection /> },
-                    { path: 'orders', element: <OrderHistorySection /> },
-                    { path: 'orders/:id/detail', element: <OrderDetailSection /> },
-                ]
-            },
-            { path: '*', element: <NotFound /> },
-        ]
-    },
-    {
-        path: "/",
-        element: <AuthLayout />,
+          { path: "change-password", element: <ChangePasswordSection /> },
+          { path: "orders", element: <OrderHistorySection /> },
+          { path: "orders/:id/detail", element: <OrderDetailSection /> },
+        ],
+      },
+      { path: "*", element: <NotFound /> },
+    ],
+  },
+  {
+    path: "/",
+    element: <AuthLayout />,
+    children: [
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+    ],
+  },
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      {
+        path: "",
+        element: <AdminDashboard />,
         children: [
-            { path: 'login', element: <Login /> },
-            { path: 'register', element: <Register /> },
-        ]
-    },
-    {
-        path: "/admin",
-        element: <AdminLayout />,
+          { path: "products", element: <AdminProductListSection /> },
+          { path: "orders", element: <AdminOrderListSection /> },
+          { path: "customers", element: <AdminCustomerListSection /> },
+          { path: "reports", element: <AdminSalesReportSection /> },
+          { path: "dashboard", element: <AdminDashboardSection /> },
+          { path: "products/create", element: <AdminCreateProduct /> },
+          { path: "products/:id/edit", element: <AdminEditProduct /> },
+        ],
+      },
+      {
+        path: "profile",
+        element: <AdminProfile />,
         children: [
-            {
-                path: '',
-                element: <AdminDashboard />,
-                children: [
-                    { path: 'products', element: <AdminProductListSection /> },
-                    { path: 'orders', element: <AdminOrderListSection /> },
-                    { path: 'customers', element: <AdminCustomerListSection /> },
-                    { path: 'reports', element: <AdminSalesReportSection /> },
-                    { path: 'dashboard', element: <AdminDashboardSection /> },
-                    { path: 'products/create', element: <AdminCreateProduct /> },
-                ]
-            },
-            {
-                path: 'profile',
-                element: <AdminProfile />,
-                children: [
-                    { path: 'change-password', element: <ChangePasswordSection /> },
-                ]
-            },
-            { path: "order", element: <AdminOrderDetail /> },
-            // { path: "products/create", element: <AdminCreateProduct /> },
-        ]
-    }
-])
+          { path: "change-password", element: <ChangePasswordSection /> },
+        ],
+      },
+      { path: "order", element: <AdminOrderDetail /> },
+      // { path: "products/create", element: <AdminCreateProduct /> },
+    ],
+  },
+]);
 
 function App() {
     const [isInitiating, setIsInitiating] = useState(true);

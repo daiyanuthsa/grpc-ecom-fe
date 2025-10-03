@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import FormInput from "../FormInput/FormInput";
 import CurrencyInput from "../CurrencyInput/CurrencyInput";
 import { ProductFormValues } from "../../types/product";
+import { useEffect } from "react";
 
 const productschema = yup.object().shape({
   name: yup.string().required("Nama produk wajib diisi"),
@@ -28,26 +29,51 @@ const productschema = yup.object().shape({
     .required("Gambar produk wajib diisi"),
   description: yup.string().optional(),
 });
+const editschema = yup.object().shape({
+  name: yup.string().required("Nama produk wajib diisi"),
+  price: yup
+    .number()
+    .typeError("Harga harus berupa angka")
+    .positive("Harga harus bilangan positif")
+    .required("Harga wajib diisi"),
+  image: yup
+    .mixed<FileList>()
+    .required("Gambar produk wajib diisi")
+    .test("fileSize", "Ukuran gambar terlalu besar", (value) => {
+      return value && value[0] ? value[0].size <= 5 * 1024 * 1024 : true;
+    })
+    .test("fileType", "Format gambar tidak didukung", (value) => {
+      return value && value.length > 0
+        ? ["image/jpeg", "image/png"].includes(value[0].type)
+        : true;
+    }),
+  description: yup.string().optional(),
+});
 
 interface ProductFormProps {
   onSubmit: (values: ProductFormValues) => Promise<void>;
   disabled?: boolean;
+  defaultValues?: ProductFormValues;
+  isEdit?: boolean;
 }
 
 function ProductForm(props: ProductFormProps) {
   const form = useForm<ProductFormValues>({
-    resolver: yupResolver(productschema),
-    defaultValues: {
-      price: 0, // Set nilai awal price ke 0 atau nilai lain
-      name: "",
-      description: "",
-      image: undefined,
-    },
+    resolver: yupResolver(props.isEdit ? editschema :productschema),
+    defaultValues: props.defaultValues,
   });
 
   const createProduct = async (values: ProductFormValues) => {
     props.onSubmit(values);
   };
+
+  useEffect(() => {
+    if (props.defaultValues) {
+      form.reset(props.defaultValues);
+    }
+    // eslint-disable-next-line
+  }, [props.defaultValues]);
+
 
   return (
     <form
@@ -72,6 +98,13 @@ function ProductForm(props: ProductFormProps) {
         control={form.control} // 👈 Wajib
         errors={form.formState.errors} // 👈 Wajib
       />
+      {props.defaultValues?.imageUrl && (
+        <img
+          className="w-100 rounded-5"
+          src={props.defaultValues?.imageUrl}
+          alt="Gambar Produk"
+        />
+      )}
       <FormInput<ProductFormValues>
         type="file"
         label="Gambar Produk"

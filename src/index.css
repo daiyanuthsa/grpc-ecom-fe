@@ -1237,3 +1237,9 @@ textarea {
     border-inline-end-width: 1px;
     cursor: pointer;
 }
+.rounded-0{
+  border-radius: 0;
+}
+.rounded-5{
+  border-radius: 20px;
+}
