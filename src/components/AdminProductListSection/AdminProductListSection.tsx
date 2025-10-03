@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useSortableHeader from "../../hooks/useSortableHeader";
 import SortableHeader from "../SortableHeader/SortableHeader";
 import Pagination from "../Pagination/Pagination";
@@ -17,11 +17,18 @@ function AdminProductListSection() {
   const [products, setProducts] = useState<ProductAdmin[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [limit, setLimit] = useState(5);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    // Reset ke halaman 1 saat limit berubah untuk menghindari bug
+    setCurrentPage(1);
   };
 
   const deleteHandler = (id: string) => {
@@ -68,7 +75,7 @@ function AdminProductListSection() {
           {
             pagination: {
               page: currentPage,
-              limit: 2,
+              limit: limit,
               sort: sort,
             },
           },
@@ -88,8 +95,8 @@ function AdminProductListSection() {
     };
 
     fetchProducts();
-    console.log(totalPages);
-  }, [currentPage, sortConfig]);
+    // eslint-disable-next-line
+  }, [currentPage, sortConfig, limit]);
 
   const renderTableBody = () => {
     if (isLoading) {
@@ -220,6 +227,8 @@ function AdminProductListSection() {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
+        onLimitChange={handleLimitChange}
+        limit={limit}
       />
     </div>
   );
