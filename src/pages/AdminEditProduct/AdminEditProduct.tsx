@@ -7,8 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-const REST_UPLOAD_URL = import.meta.env.VITE_REST_UPLOAD_URL;
-
+const REST_UPLOAD_URL = import.meta.env.VITE_REST_UPLOAD_URL; 
 
 function AdminEditProduct() {
   const { id } = useParams<{ id: string }>(); // 1. Ambil ID dari URL
