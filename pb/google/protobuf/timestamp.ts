@@ -198,6 +198,7 @@ class Timestamp$Type extends MessageType<Timestamp> {
      * in the RFC 3339 format.
      */
     internalJsonWrite(message: Timestamp, options: JsonWriteOptions): JsonValue {
+        void options;
         let ms = PbLong.from(message.seconds).toNumber() * 1000;
         if (ms < Date.parse("0001-01-01T00:00:00Z") || ms > Date.parse("9999-12-31T23:59:59Z"))
             throw new Error("Unable to encode Timestamp to JSON. Must be from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z inclusive.");
@@ -220,6 +221,7 @@ class Timestamp$Type extends MessageType<Timestamp> {
      * in the RFC 3339 format.
      */
     internalJsonRead(json: JsonValue, options: JsonReadOptions, target?: Timestamp): Timestamp {
+        void options;
         if (typeof json !== "string")
             throw new Error("Unable to parse Timestamp from JSON " + typeofJsonValue(json) + ".");
         let matches = json.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(?:Z|\.([0-9]{3,9})Z|([+-][0-9][0-9]:[0-9][0-9]))$/);
