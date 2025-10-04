@@ -22,30 +22,24 @@ pipeline {
                         }
                     }
                 }
-                stage('Build Image') {
+                stage('Build and Push') { // Menggabungkan Build dan Push
                     steps {
-                        // Tarik semua kredensial yang dibutuhkan untuk build
                         withCredentials([
                             string(credentialsId: 'dockerhub-username', variable: 'DOCKER_REGISTRY_USER'),
                             string(credentialsId: 'vite-grpc-server-url', variable: 'VITE_GRPC_URL'),
                             string(credentialsId: 'vite-rest-upload-url', variable: 'VITE_REST_URL')
                         ]) {
                             script {
-                                IMAGE_NAME = "${DOCKER_REGISTRY_USER}/react-frontend:latest"
-                                // Build dengan --build-arg
+                                def imageName = "${DOCKER_REGISTRY_USER}/react-frontend:latest"
+                                // Build dan Push dalam satu perintah
                                 sh """
                                     docker buildx build --platform linux/arm64 \\
                                         --build-arg VITE_GRPC_SERVER_URL=${VITE_GRPC_URL} \\
                                         --build-arg VITE_REST_UPLOAD_URL=${VITE_REST_URL} \\
-                                        -t ${IMAGE_NAME} --push .
+                                        -t ${imageName} --push .
                                 """
                             }
                         }
-                    }
-                }
-                stage('Push') {
-                    steps {
-                        sh "docker push ${IMAGE_NAME}"
                     }
                 }
             }
