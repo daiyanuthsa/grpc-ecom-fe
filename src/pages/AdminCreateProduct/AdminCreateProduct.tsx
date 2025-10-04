@@ -5,7 +5,7 @@ import { useGrpcApi } from "../../hooks/useGrpcApi";
 import { ProductFormValues } from "../../types/product";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-const REST_UPLOAD_URL = "http://127.0.0.1:9000/product/upload";
+const REST_UPLOAD_URL = import.meta.env.VITE_REST_UPLOAD_URL;
 function AdminCreateProduct() {
   const productApi = useGrpcApi();
   const navigate = useNavigate();

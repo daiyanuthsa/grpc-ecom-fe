@@ -7,7 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-const REST_UPLOAD_URL = "http://127.0.0.1:9000/product/upload";
+const REST_UPLOAD_URL = import.meta.env.VITE_REST_UPLOAD_URL;
 
 
 function AdminEditProduct() {

@@ -14,7 +14,7 @@ let productClient: IProductServiceClient | null = null;
 
 const getWebTransport = () => {
   webTransport ??= new GrpcWebFetchTransport({
-    baseUrl: "http://localhost:8080",
+    baseUrl: import.meta.env.VITE_GRPC_SERVER_URL || "http://localhost:8080",
     interceptors: [authInterceptor],
   });
   return webTransport;
