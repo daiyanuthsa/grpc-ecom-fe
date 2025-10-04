@@ -2,26 +2,53 @@ pipeline {
     agent none
 
     stages {
-        // TAHAP INI DIJALANKAN DI VM GCP
+        // TAHAP UTAMA UNTUK BUILD
         stage('Build Image on Remote Agent') {
             agent { label 'tencent-vm' }
-            steps {
-                withCredentials([
-                    usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
-                    string(credentialsId: 'dockerhub-username', variable: 'DOCKER_REGISTRY_USER')
-                ]) {
-                    script {
-                        def imageName = "${DOCKER_REGISTRY_USER}/react-frontend:latest"
-                        sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
-                        sh "docker build -t ${imageName} ."
-                        sh "docker push ${imageName}"
-                        sh "docker logout"
+            
+            // Definisikan variabel di sini agar bisa diakses oleh sub-stage
+            environment {
+                IMAGE_NAME = ''
+            }
+
+            // TAHAPAN KECIL DI DALAM BUILD
+            stages {
+                stage('Login to Docker') {
+                    steps {
+                        withCredentials([
+                            usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')
+                        ]) {
+                            sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        }
                     }
+                }
+                stage('Build') {
+                    steps {
+                        script {
+                            // Ambil username dari credentials dan set nama image
+                            withCredentials([string(credentialsId: 'dockerhub-username', variable: 'DOCKER_REGISTRY_USER')]) {
+                                IMAGE_NAME = "${DOCKER_REGISTRY_USER}/react-frontend:latest"
+                            }
+                            sh "docker build -t ${IMAGE_NAME} ."
+                        }
+                    }
+                }
+                stage('Push') {
+                    steps {
+                        sh "docker push ${IMAGE_NAME}"
+                    }
+                }
+            }
+            
+            // Aksi yang selalu dijalankan setelah semua sub-stage di atas selesai
+            post {
+                always {
+                    sh 'docker logout'
                 }
             }
         }
 
-        // TAHAP INI DIJALANKAN DI JENKINS MASTER (STB ANDA)
+        // TAHAP UTAMA UNTUK DEPLOY
         stage('Deploy Service on Local Server') {
             agent { label 'master' }
             steps {
