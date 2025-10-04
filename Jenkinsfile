@@ -50,7 +50,7 @@ pipeline {
 
         // TAHAP UTAMA UNTUK DEPLOY
         stage('Deploy Service on Local Server') {
-            agent { label 'master' }
+            agent { label 'built-in' }
             steps {
                 withCredentials([
                     usernamePassword(credentialsId: 'deploy-server-credentials', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS'),
