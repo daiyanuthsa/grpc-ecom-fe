@@ -66,7 +66,7 @@ pipeline {
                     usernamePassword(credentialsId: 'deploy-server-credentials', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS'),
                     string(credentialsId: 'deploy-server-ip', variable: 'DEPLOY_SERVER_IP')
                 ]) {
-                    sh "sshpass -p '${SSH_PASS}' ssh -o StrictHostKeyChecking=no ${SSH_USER}@${DEPLOY_SERVER_IP} 'cd /home/root/grpc-ecom && docker-compose pull frontend && docker-compose up -d --no-deps frontend && docker system prune -af'"
+                    sh "sshpass -p '${SSH_PASS}' ssh -o StrictHostKeyChecking=no ${SSH_USER}@${DEPLOY_SERVER_IP} 'cd /home/root/grpc-ecom && docker compose pull frontend && docker compose up -d --no-deps frontend && docker system prune -af'"
                 }
             }
         }
